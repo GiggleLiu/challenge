@@ -16,32 +16,38 @@ class MyGraph(object):
         self.node_positions=np.asarray(node_positions)
         self.must_nodes=must_nodes if must_nodes is not None else []
         self.must_connections=must_connections if must_connections is not None else []
-        ng=self.num_nodes
-        if ng!=self.node_positions.shape[0] or self.node_positions.shape[1]!=2:
+        il,jl,wl=zip(*self.connections)
+        num_nodes=int(max(max(il),max(jl))+1)
+        if num_nodes!=self.node_positions.shape[0] or self.node_positions.shape[1]!=2:
             raise ValueError()
+
+        #initialize matrices.
+        il,jl,weights=zip(*self.connections)
+        il,jl=np.concatenate([il,jl]),np.concatenate([jl,il])
+        weights=np.concatenate([weights,weights])
+        self.sparse_matrix=sps.coo_matrix((weights,(il,jl)),dtype='float64')
+        self.dense_matrix=np.zeros([num_nodes]*2)
+        self.dense_matrix[il,jl]=weights
+
+    def __str__(self):
+        return 'Graph(%s nodes, %s legs)\n %s'%(self.num_nodes,self.num_paths,'\n '.join(str(con) for con in self.connections))
 
     @property
     def num_nodes(self):
         '''Number of nodes'''
-        il,jl,wl=zip(*self.connections)
-        return int(max(max(il),max(jl))+1)
+        return self.dense_matrix.shape[0]
 
-    def construct_graph_matrix(self,mtype='sparse'):
-        '''
-        Parameters:
-            :mtype: 'sparse'/'dense'.
-        '''
-        il,jl,weights=zip(*self.connections)
-        il,jl=np.concatenate([il,jl]),np.concatenate([jl,il])
-        weights=np.concatenate([weights,weights])
-        if mtype=='sparse':
-            mat=sps.coo_matrix((weights,(il,jl)),dtype='float64')
-        elif mtype=='dense':
-            mat=zeros([self.num_nodes]*2)
-            mat[il,jl]=weights
-        else:
-            raise ValueError('Wrong type of matrix.')
-        return mat
+    @property
+    def num_paths(self):
+        '''Number of paths'''
+        return len(self.connections)
+
+    def get_cost(self,path):
+        '''Calculate the cost for given path.'''
+        il,jl=path[:-1],path[1:]
+        diss=self.dense_matrix[il,jl]
+        if any(diss==0): raise ValueError('Invalid Path!')
+        return sum(diss)
 
 def random_graph(num_nodes,density=1):
     m=np.random.random([num_nodes]*2)*3
