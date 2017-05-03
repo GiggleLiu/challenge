@@ -1,23 +1,9 @@
 import numpy as np
+from scipy.sparse.csgraph import dijkstra
+import pdb
 
 from antcolony import AntGraph,AntColony
 from setting import num_ants,num_ant_repetitions,num_ant_iterations,constraint_bisect_xtol,constrain_maxeval
-
-def djfunc_tqk(mat,must_nodes,must_connections):
-    '''Interfacing TQK's Dijkstra function.'''
-    nt=len(must_nodes)+2*len(must_connections)+2
-    tsp_mat=np.random.random([nt,nt])
-    tsp_mat[1,2]=-2
-    tsp_mat+=tsp_mat.T
-    np.fill_diagonal(tsp_mat,0)
-    predecesor=np.random.random([nt,len(mat)])
-    return tsp_mat,predecesor
-
-def tsp2path_tqk(best_path_vec,predecesor):
-    '''Interfacing TQK's path recover function.'''
-    nodes=range(predecesor.shape[1])
-    best_path_vec_real=np.random.choice(nodes,np.random.randint(0,2*predecesor.shape[1]))
-    return best_path_vec_real
 
 def find_shortest_path(g,max_num_nodes=np.Inf):
     '''
@@ -51,14 +37,17 @@ def _find_shortest_path1(g,bias,max_num_nodes):
     mm[nzmask]=g.dense_matrix[nzmask].mean()
     mat=g.dense_matrix*(1-bias)+bias*mm
     must_connections=[g.connections[ic][:2] for ic in g.must_connections]
-    tsp_mat,predecesor=djfunc_tqk(mat,g.must_nodes,must_connections)
+
+    must_nodes=np.unique(np.concatenate([g.must_nodes,[0,g.num_nodes-1],np.array(must_connections).ravel()]))
+    must_nodes.sort()
+    tsp_mat,predecesor=djfunc_tqk(mat,must_nodes,must_connections)
 
     #solve tsp using ant colony
     best_path_vecs,best_path_costs=solve_tsp_mat(tsp_mat)
     indmin=np.argmin(best_path_costs)
     best_path_vec=best_path_vecs[indmin]
     best_path_cost=best_path_costs[indmin]
-    best_path_vec_real=tsp2path_tqk(best_path_vec,predecesor)
+    best_path_vec_real=tsp2path_tqk(best_path_vec,must_nodes,predecesor)
     qualified=len(best_path_vec_real)<=max_num_nodes
     return 1 if qualified else -1,(best_path_vec_real,best_path_cost)
 
@@ -94,7 +83,7 @@ def solve_tsp_mat(tsp_mat):
     best_path_cost = []
     for i in range(num_ant_repetitions):
         graph.reset_tau()
-        ant_colony = AntColony(graph, num_ants)
+        ant_colony = AntColony(graph, num_ants, start_node=0,end_node=len(tsp_mat)-1)
         ant_colony.run(num_ant_iterations)
         best_path_vec.append(ant_colony.best_path_vec)
         best_path_cost.append(ant_colony.best_path_cost)
@@ -113,4 +102,59 @@ def analyse_tsp_solutions(best_path_vec,best_path_cost):
     correct_rate=(best_path_cost[indmin]==np.array(best_path_cost)).mean()
     print 'Correct Rate = %s'%correct_rate
 
+def djfunc_tqk(mat,node,line):
+    '''Interfacing TQK's Dijkstra function.'''
+    dist,pred=dijkstra(mat,return_predecessors=1)
+    n=len(node)
+    #dist.sum(axis=(0,1))/float(n)
+    bias_neg=-0.1
+    bias_pos=100
+    li=reduce(lambda x,y:x+y,line)
+    m=len(li)
+    for i in xrange(n):
+        for j in node[i+1:]:
+            path=0
+            k=node[i]
+            t=j
+            s=pred[i,t]
+            while s>=0:
+                for p in xrange(m):
+                    if t==li[p]:
+                        if p%2==0:
+                            if s==li[p+1]:
+                                path=1
+                                break
+                        elif s==li[p-1]:
+                                path=1
+                                break
+                if path==1:
+                    dist[k,j]=dist[i,k]+bias_pos
+                    dist[j,k]=dist[k,j]
+                    break
+                else:
+                    t=s
+                    s=pred[i,t]
+	line=np.array(line)
+    pred[line[:,0],line[:,1]]=line[:,0]
+    dist[line[:,0],line[:,1]]=bias_neg
+    dist[line[:,1],line[:,0]]=bias_neg
+    d=dist[np.ix_(node,node)]
+    pdb.set_trace()
+    return d,pred
 
+def tsp2path_tqk(tsp_solution,node,pred):
+    '''Interfacing TQK's path recover function.'''
+    a=[]
+    n=len(node)
+    node=np.asarray(node)
+    b=node[tsp_solution]
+    b=b[::-1]
+    for i in xrange(n-1):
+        j=b[i]
+        k=b[i+1]
+        a.append(b[i])
+        while pred[k,j]!=k and pred[k,j]>=0:
+            j=pred[k,j]
+            a.append(j)
+    a.append(b[-1])
+    return a[::-1]

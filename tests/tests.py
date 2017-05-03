@@ -34,14 +34,17 @@ def test_shortest_path():
 def test_g(g):
     solution,cost=find_shortest_path(g,max_num_nodes=8)
     print solution,cost
-    ion()
+    #ion()
     visualize_graph(g)
-    visualize_path(g,solution)
+    #visualize_path(g,solution)
+    animate_path(g,solution)#,filename='Ant-G%s'%ig)
     axis('equal')
-    pdb.set_trace()
+    axis('off')
+    show()
+    #pdb.set_trace()
     assert_allclose(solution,g.solution)
 
 if __name__=='__main__':
-    test_g(G0)
+    #test_g(G1)
     #test_shortest_path()
-    #show_cases()
+    show_cases()
