@@ -21,4 +21,3 @@ class AntGraph:
         # initial tau 
         self.tau0=1.0 / (self.num_nodes * 0.5 * avg)
         self.tau_mat[...] = self.tau0
-        print "Average = %s" % (avg,)

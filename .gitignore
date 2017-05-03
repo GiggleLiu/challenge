@@ -1,6 +1,6 @@
 *.pyc
 *~
-*.dat
+tests/*.dat
 *.swp
 *.o
 *.so

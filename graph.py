@@ -2,7 +2,7 @@ import scipy.sparse as sps
 import numpy as np
 import pdb
 
-__all__=['MyGraph','random_graph']
+__all__=['MyGraph','random_graph','save_graph','load_graph']
 
 class MyGraph(object):
     '''
@@ -48,6 +48,26 @@ class MyGraph(object):
         diss=self.dense_matrix[il,jl]
         if any(diss==0): raise ValueError('Invalid Path!')
         return sum(diss)
+
+def save_graph(graph_prefix,graph):
+    must_nodes_mask=np.zeros(graph.num_nodes)
+    must_nodes_mask[graph.must_nodes]=1
+    np.savetxt(graph_prefix+'.nod.dat',np.concatenate([graph.node_positions,must_nodes_mask[:,np.newaxis]],axis=1))
+    must_con_mask=np.zeros(len(graph.connections))
+    must_con_mask[graph.must_connections]=1
+    np.savetxt(graph_prefix+'.con.dat',np.concatenate([graph.connections,must_con_mask[:,np.newaxis]],axis=1))
+
+def load_graph(graph_prefix):
+    #load nodes
+    pos_data=np.loadtxt(graph_prefix+'.nod.dat')
+    must_nodes=np.where(pos_data[:,-1])[0]
+    node_positions=pos_data[:,:2]
+    #load connections
+    con_data=np.loadtxt(graph_prefix+'.con.dat')
+    connections=[(int(data[0]),int(data[1]),data[2]) for data in con_data]
+    must_connections=np.where(con_data[:,-1])[0]
+    g=MyGraph(connections,node_positions,must_nodes=must_nodes,must_connections=must_connections)
+    return g
 
 def random_graph(num_nodes,density=1):
     m=np.random.random([num_nodes]*2)*3

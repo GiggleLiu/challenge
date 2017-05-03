@@ -25,6 +25,18 @@ def show_cases():
         #animate_path(g,g.solution)#,filename='Ant-G%s'%ig)
         pdb.set_trace()
 
+def test_saveload():
+    print 'Test save and load of graph.'
+    pref='sample'
+    save_graph(pref,G0)
+    G1=load_graph(pref)
+    assert_allclose(G0.must_nodes,G1.must_nodes)
+    assert_allclose(G0.node_positions,G1.node_positions)
+    assert_allclose(G0.must_connections,G1.must_connections)
+    assert_allclose(G0.connections,G1.connections)
+
+    pdb.set_trace()
+
 def test_shortest_path():
     from scipy.sparse.csgraph import shortest_path
     mat=G1.sparse_matrix
@@ -32,7 +44,8 @@ def test_shortest_path():
     print 'The shortest distances between nodes are:\n%s'%dist_matrix
 
 def test_g(g):
-    solution,cost=find_shortest_path(g,max_num_nodes=8)
+    solution,cost=find_shortest_path(g,max_num_nodes=12)
+    return
     print solution,cost
     #ion()
     visualize_graph(g)
@@ -45,6 +58,7 @@ def test_g(g):
     assert_allclose(solution,g.solution)
 
 if __name__=='__main__':
-    #test_g(G1)
+    #test_saveload()
+    test_g(G9)
     #test_shortest_path()
-    show_cases()
+    #show_cases()

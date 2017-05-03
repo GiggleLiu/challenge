@@ -79,4 +79,23 @@ G7=MyGraph(connections=[(0,1,0.3),(1,2,0.5),(1,3,10),(2,3,0.5),(1,4,2)],\
         must_nodes=[3],must_connections=[1])
 G7.solution=[0,1,2,3,2,1,4]
 
-Gs=[G0,G1,G2,G3,G4,G5,G6,G7]
+#disconnected graph
+G8=MyGraph(connections=[(3,1,1.),(3,2,0.5),(1,2,1.3),\
+        (0,4,0.7),(0,5,3.),(4,5,1.),(4,6,0.8),(5,6,0.1)],\
+        node_positions=[(2,0),(1,0),(0,-1),(0,0),(2,-1),(3.,0),(3.5,-0.5)],\
+        must_connections=[7])
+G8.solution=[0,4,5,6] #no solusion
+
+#big lattice.
+N=10
+x,y=arange(10),arange(10)
+X,Y=meshgrid(x,y,indexing='ij')
+node_positions=zip(X.ravel(),Y.ravel())
+Atom=arange(N**2).reshape([N,N])
+connections=zip(Atom.ravel(),roll(Atom,1,axis=0).ravel(),ones(N**2))+zip(Atom.ravel(),roll(Atom,1,axis=1).ravel(),ones(N**2))
+G9=MyGraph(connections=connections,node_positions=node_positions,must_nodes=unique(random.randint(0,N**2,N)),must_connections=unique(random.randint(0,2*N**2,N)))
+G9.solution=[]
+
+#start == end
+
+Gs=[G0,G1,G2,G3,G4,G5,G6,G7,G8]

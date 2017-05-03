@@ -3,16 +3,30 @@ Visualization tools.
 '''
 
 from numpy import *
-from numpy.linalg import norm
+from numpy.linalg import norm,eigh
 import scipy.sparse as sps
 import matplotlib.pyplot as plt
 from matplotlib import animation
 from matplotlib.offsetbox import OffsetImage,AnnotationBbox
-import pdb
+import os,pdb
 
-__all__=['visualize_graph','visualize_path','animate_path']
+__all__=['visualize_graph','visualize_path','animate_path','distance2pos']
 
 radius=0.3
+
+def distance2pos(dist_mat):
+    '''
+    Get "distance" from position matrix.
+
+    https://math.stackexchange.com/questions/156161/finding-the-coordinates-of-points-from-distance-matrix
+    '''
+    M=dist_mat[:1,:]**2+dist_mat[:,:1]**2-dist_mat**2
+    E,U=eigh(M); E[E<0]=0
+    X=U*sqrt(E)
+    pdb.set_trace()
+    major_columns=argsort(sum(abs(X),axis=0))[-2:]
+    pos=X[:,major_columns]
+    return pos
 
 def plot_single_node(pos,color,text):
     ax=plt.gca()
@@ -76,7 +90,8 @@ def visualize_graph(g):
     for i in xrange(ng):
         plot_single_node(poss[i],color=colors[i],text='%s'%i)
     for ii,(i,j,weight) in enumerate(g.connections):
-        plot_single_connection(poss[i],poss[j],weight=weight,text='%s'%weight,color='g' if ii in g.must_connections else 'k',shrink=True)
+        must_con=ii in g.must_connections
+        plot_single_connection(poss[i],poss[j],weight=weight if not must_con else 3,text='%s'%weight,color='g' if must_con else 'k',shrink=True)
 
 
 def visualize_path(g,path):
@@ -89,8 +104,9 @@ def visualize_path(g,path):
         plot_single_connection(pos1,pos2,text='%s'%i,arrow_direction=1,color='r',weight=2,textoffset=0,shrink=False)
 
 def get_ant(pos):
-    image=plt.imread('../static/ant.png')
-    im=OffsetImage(image,zoom=0.15)
+    image_path=os.path.join(os.path.dirname(__file__),'static/ant.png')
+    image=plt.imread(image_path)
+    im=OffsetImage(image,zoom=0.1)
     ab=AnnotationBbox(im,(pos[0],pos[1]),xycoords='data',frameon=False)
     plt.gca().add_artist(ab)
     return ab
@@ -99,7 +115,7 @@ def ant_march(ant,pos):
     ant.xybox=pos
     return ant
 
-def animate_path(g,path,filename=None):
+def animate_path(g,path,ant_speed=1,filename=None):
     '''
     Ant March!
     '''
@@ -107,8 +123,7 @@ def animate_path(g,path,filename=None):
     node_color='r'
     edge_color='r'
     poss=g.node_positions[path]
-    nspan=10 if filename is not None else 1
-    walk_step=0.02*nspan
+    walk_step=0.04*ant_speed
     ant=get_ant(poss[0])
     route=[]
     for i,(pos1,pos2) in enumerate(zip(poss[:-1],poss[1:])):
@@ -127,7 +142,7 @@ def animate_path(g,path,filename=None):
 
     anim = animation.FuncAnimation(plt.gcf(), update,  
                                    frames=len(route), 
-                                   interval=20*nspan,repeat=False,
+                                   interval=40,repeat=False,
                                    blit=True)
     if filename is None:
         plt.show()

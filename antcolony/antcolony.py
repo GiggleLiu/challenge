@@ -38,7 +38,7 @@ class AntColony:
                 ant.reset()
 
             self.update_pheromone()
-        print "Best: %s, %s, %s, %s" % (self.best_path_vec, self.best_path_cost, i, avg_path_cost,)
+        #print "Best: %s, %s, %s, %s" % (self.best_path_vec, self.best_path_cost, i, avg_path_cost,)
 
     def update_pheromone(self):
         '''Update Pheromone on the graph.'''
