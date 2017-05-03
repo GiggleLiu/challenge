@@ -89,7 +89,7 @@ def visualize_path(g,path):
         plot_single_connection(pos1,pos2,text='%s'%i,arrow_direction=1,color='r',weight=2,textoffset=0,shrink=False)
 
 def get_ant(pos):
-    image=plt.imread('ant.png')
+    image=plt.imread('static/ant.png')
     im=OffsetImage(image,zoom=0.15)
     ab=AnnotationBbox(im,(pos[0],pos[1]),xycoords='data',frameon=False)
     plt.gca().add_artist(ab)

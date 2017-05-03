@@ -1,6 +1,7 @@
 from numpy import *
 import matplotlib.pyplot as plt
-import pdb
+import pdb,sys
+sys.path.insert(0,'../')
 
 from graph import *
 from graph_visualization import *
