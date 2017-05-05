@@ -1,14 +1,17 @@
 from configobj import ConfigObj
 from validate import Validator
 import matplotlib.pyplot as plt
-import os,sys,pdb
+import os,sys
 
 from graph_visualization import animate_path,visualize_graph,visualize_path
 from graph import load_graph
 from solvepath import find_shortest_path
 from testcases import Gs
 
-def run_config():
+def run_config(config_file):
+    '''
+    TODO: start == end? start, end at random position?
+    '''
     #read config
     specfile=os.path.join(os.path.dirname(__file__),'config-spec.ini')
     config=ConfigObj(config_file,configspec=specfile,stringify=True)
@@ -53,4 +56,4 @@ if __name__=='__main__':
         config_file=sys.argv[1]
     else:
         config_file='config-sample.ini'
-    run_config()
+    run_config(config_file)

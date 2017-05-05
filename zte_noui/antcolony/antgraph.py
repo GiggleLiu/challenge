@@ -1,4 +1,5 @@
-import numpy as np
+#import numpy as np
+import poor_mans_numpy as np
 
 class AntGraph:
     def __init__(self, delta_mat, tau_mat=None):
@@ -15,8 +16,10 @@ class AntGraph:
     def num_nodes(self): return len(self.delta_mat)
 
     def reset_tau(self):
-        avg = self.delta_mat.mean()
+        avg = np.mean(self.delta_mat)
 
         # initial tau 
         self.tau0=1.0 / (self.num_nodes * 0.5 * avg)
-        self.tau_mat[...] = self.tau0
+        for l in self.tau_mat:
+            for j in xrange(len(l)):
+                l[j] = self.tau0

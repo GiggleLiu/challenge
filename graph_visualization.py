@@ -8,7 +8,7 @@ import scipy.sparse as sps
 import matplotlib.pyplot as plt
 from matplotlib import animation
 from matplotlib.offsetbox import OffsetImage,AnnotationBbox
-import os,pdb
+import os
 
 __all__=['visualize_graph','visualize_path','animate_path','distance2pos']
 
@@ -23,7 +23,6 @@ def distance2pos(dist_mat):
     M=dist_mat[:1,:]**2+dist_mat[:,:1]**2-dist_mat**2
     E,U=eigh(M); E[E<0]=0
     X=U*sqrt(E)
-    pdb.set_trace()
     major_columns=argsort(sum(abs(X),axis=0))[-2:]
     pos=X[:,major_columns]
     return pos

@@ -1,4 +1,5 @@
-import numpy as np
+#import numpy as np
+import poor_mans_numpy as np
 
 from ant import Ant
 
@@ -42,5 +43,6 @@ class AntColony:
     def update_pheromone(self):
         '''Update Pheromone on the graph.'''
         pos=self.best_path_vec[:-1],self.best_path_vec[1:]
-        self.graph.tau_mat*=(1-self.Rho)
-        self.graph.tau_mat[pos]+=self.Rho/self.best_path_cost
+        self.graph.tau_mat=np.multiply(self.graph.tau_mat,(1-self.Rho))
+        for i,j in zip(*pos):
+            self.graph.tau_mat[i][j]+=self.Rho/self.best_path_cost

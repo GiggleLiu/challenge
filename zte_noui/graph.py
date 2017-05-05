@@ -1,5 +1,5 @@
-import scipy.sparse as sps
-import numpy as np
+#import numpy as np
+import poor_mans_numpy as np
 
 __all__=['MyGraph','random_graph','save_graph','load_graph']
 
@@ -17,16 +17,16 @@ class MyGraph(object):
         self.must_connections=must_connections if must_connections is not None else []
         il,jl,wl=zip(*self.connections)
         num_nodes=int(max(max(il),max(jl))+1)
-        if num_nodes!=self.node_positions.shape[0] or self.node_positions.shape[1]!=2:
+        if num_nodes!=np.shape(self.node_positions)[0] or np.shape(self.node_positions)[1]!=2:
             raise ValueError()
 
         #initialize matrices.
         il,jl,weights=zip(*self.connections)
         il,jl=np.concatenate([il,jl]),np.concatenate([jl,il])
         weights=np.concatenate([weights,weights])
-        self.sparse_matrix=sps.coo_matrix((weights,(il,jl)),dtype='float64')
         self.dense_matrix=np.zeros([num_nodes]*2)
-        self.dense_matrix[il,jl]=weights
+        for i,j,w in zip(il,jl,weights):
+            self.dense_matrix[i][j]=w
 
     def __str__(self):
         return 'Graph(%s nodes, %s legs)\n %s'%(self.num_nodes,self.num_paths,'\n '.join(str(con) for con in self.connections))
@@ -34,7 +34,7 @@ class MyGraph(object):
     @property
     def num_nodes(self):
         '''Number of nodes'''
-        return self.dense_matrix.shape[0]
+        return np.shape(self.dense_matrix)[0]
 
     @property
     def num_paths(self):
@@ -44,8 +44,8 @@ class MyGraph(object):
     def get_cost(self,path):
         '''Calculate the cost for given path.'''
         il,jl=path[:-1],path[1:]
-        diss=self.dense_matrix[il,jl]
-        if np.any(diss==0): raise ValueError('Invalid Path!')
+        diss=[self.dense_matrix[i][j] for i,j in zip(il,jl)]
+        if not np.all(diss): raise ValueError('Invalid Path!')
         return np.sum(diss)
 
 def save_graph(graph_prefix,graph):

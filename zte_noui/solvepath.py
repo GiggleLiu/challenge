@@ -1,5 +1,7 @@
-import numpy as np
-from scipy.sparse.csgraph import shortest_path
+#import numpy as np
+import poor_mans_numpy as np
+#from scipy.sparse.csgraph import shortest_path
+from dijkstra import dijkstra
 import sys
 
 from antcolony import AntGraph,AntColony
@@ -33,13 +35,10 @@ def _find_shortest_path1(g,bias,max_num_nodes,ant_config,djmethod,bias_pos,bias_
         (is qualified,(best solution, cost of best solution)),
         qualified means the number of nodes do not exceed max_num_nodes.
     '''
-    mm=np.zeros_like(g.dense_matrix)
-    nzmask=g.dense_matrix!=0
-    mm[nzmask]=g.dense_matrix[nzmask].mean()
-    mat=g.dense_matrix*(1-bias)+bias*mm
+    mat=np.mix_mat_by_mean(g.dense_matrix,bias,mean_weight=np.mean([con[-1] for con in g.connections]))
     must_connections=[g.connections[ic][:2] for ic in g.must_connections]
 
-    must_nodes=np.int32(np.unique(np.concatenate([g.must_nodes,[0,g.num_nodes-1],np.array(must_connections).ravel()])))
+    must_nodes=np.int32(np.unique(np.concatenate([g.must_nodes,[0,g.num_nodes-1],np.ravel(np.array(must_connections))])))
     must_nodes.sort()
     tsp_mat,predecesor=djfunc_tqk(mat,must_nodes,must_connections,method=djmethod,bias_pos=bias_pos,bias_neg=bias_neg)
 
@@ -54,15 +53,15 @@ def _find_shortest_path1(g,bias,max_num_nodes,ant_config,djmethod,bias_pos,bias_
 
 def bisect(func, low, high, max_eval):
     '''find lowest qualified root of func'''
-    print 'Running Ant Conlony Optimization for 1-th iteration (shortest path)'
+    print 'Running Ant Conlony Optimization for 1-th bias (shortest path)'
     flow,lres=func(low)
     if flow==1 or max_eval==1: return low,lres
-    print 'Running Ant Conlony Optimization for 2-th iteration (minimal nodes)'
+    print 'Running Ant Conlony Optimization for 2-th bias (minimal nodes)'
     fhigh,hres=func(high)
     if flow==fhigh: return None,lres
     for i in range(max_eval-2):
         midpoint=(low+high)/2.
-        print 'Running Ant Conlony Optimization for %s-th iteration'%(i+3)
+        print 'Running Ant Conlony Optimization for %s-th bias'%(i+3)
         fmid,mres=func(midpoint)
         if flow*fmid>0:
             low = midpoint
@@ -106,23 +105,20 @@ def analyse_tsp_solutions(best_path_vec,best_path_cost):
 
 def djfunc_tqk(mat,node,line,method='D',bias_pos=100,bias_neg=-0.1):
     '''Interfacing TQK's Dijkstra function.'''
-    dist,pred=shortest_path(mat,return_predecessors=True,method=method)
-    if any(np.isinf(dist[0,node])):
+    dist,pred=dijkstra(mat,return_predecessors=True)
+    #dist,pred=dijkstra(mat,indices=node,return_predecessors=True)
+    if np.isinf(np.take(dist[0],node)):
         print 'Can not find solution, must_pass nodes disconnected!'
         sys.exit()
     n=len(node)
-    li=np.array(line).ravel()
+    li=np.ravel(np.asarray(line))
     m=len(li)
-    #prd=pred.copy()
-    #np.fill_diagonal(prd,np.arange(len(prd)))
-    #x,y=np.meshgrid(np.arange(pred.shape[0]),np.arange(pred.shape[1]),indexing='ij')
-    #print pred[x,prd]
     for i in xrange(n):
         for j in node[i+1:]:
             path=0
             k=node[i]
             t=j
-            s=pred[i,t]
+            s=pred[i][t]
             while s>=0:
                 for p in xrange(m):
                     if t==li[p]:
@@ -134,18 +130,18 @@ def djfunc_tqk(mat,node,line,method='D',bias_pos=100,bias_neg=-0.1):
                                 path=1
                                 break
                 if path==1:
-                    dist[k,j]=dist[i,k]+bias_pos
-                    dist[j,k]=dist[k,j]
+                    dist[k][j]=dist[i][k]+bias_pos
+                    dist[j][k]=dist[k][j]
                     break
                 else:
                     t=s
-                    s=pred[i,t]
-	line=np.array(line)
-    if len(line)!=0:
-        pred[line[:,0],line[:,1]]=line[:,0]
-        dist[line[:,0],line[:,1]]=bias_neg
-        dist[line[:,1],line[:,0]]=bias_neg
-    d=dist[np.ix_(node,node)]
+                    s=pred[i][t]
+        line=np.array(line)
+    for i in xrange(len(line)):
+        pred[line[i][0]][line[i][1]]=line[i][0]
+        dist[line[i][0]][line[i][1]]=bias_neg
+        dist[line[i][1]][line[i][0]]=bias_neg
+    d=np.take(np.take(dist,node,axis=0),node,axis=1)
     return d,pred
 
 def tsp2path_tqk(tsp_solution,node,pred):
@@ -153,14 +149,20 @@ def tsp2path_tqk(tsp_solution,node,pred):
     a=[]
     n=len(node)
     node=np.asarray(node)
-    b=node[tsp_solution]
+    b=np.take(node,tsp_solution)
     b=b[::-1]
     for i in xrange(n-1):
         j=b[i]
         k=b[i+1]
         a.append(b[i])
-        while pred[k,j]!=k and pred[k,j]>=0:
-            j=pred[k,j]
+        while pred[k][j]!=k and pred[k][j]>=0:
+            j=pred[k][j]
             a.append(j)
     a.append(b[-1])
     return a[::-1]
+
+def int32(l):
+    return [int(li) for li in l]
+
+def isinf(l):
+    return [li==Inf for li in l]

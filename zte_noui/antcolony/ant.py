@@ -1,4 +1,6 @@
-import numpy as np
+#import numpy as np
+import poor_mans_numpy as np
+import random
 
 class Ant(object):
     def __init__(self, start_node, graph,end_node=None,alpha=1,beta=1,prob_exploitation=0.5,rho=0.99):
@@ -40,22 +42,23 @@ class Ant(object):
 
     def update_pheronmone_local(self,curr_node,next_node):
         graph=self.graph
-        graph.tau_mat[curr_node, next_node]=graph.tau_mat[curr_node, next_node]*(1-self.rho)+self.rho*graph.tau0
+        graph.tau_mat[curr_node][next_node]=graph.tau_mat[curr_node][next_node]*(1-self.rho)+self.rho*graph.tau0
 
     def get_path_cost(self):
-        return self.graph.delta_mat[self.path_vec[:-1],self.path_vec[1:]].sum()
+        return np.sum([self.graph.delta_mat[i][j] for i,j in zip(self.path_vec[:-1],self.path_vec[1:])])
 
     # described in report -- determines next node to visit after curr_node
     def state_transition_rule(self, curr_node):
         graph = self.graph
         nodes_to_visit=self.nodes_to_visit
 
-        if np.random.random() < self.prob_exploitation:
-            val = graph.tau_mat[curr_node, nodes_to_visit]**self.alpha/graph.delta_mat[curr_node, nodes_to_visit]**self.beta
+        if random.random() < self.prob_exploitation:
+            val = np.divide(np.power(np.take(graph.tau_mat[curr_node],nodes_to_visit,axis=0),self.alpha),
+                    np.power(np.take(graph.delta_mat[curr_node],nodes_to_visit,axis=0),self.beta))
             inode=np.argmax(val)
         else:
-            p=graph.tau_mat[curr_node, nodes_to_visit]**self.alpha/graph.delta_mat[curr_node, nodes_to_visit]**self.beta
-            p=p/p.sum()
-            inode=np.searchsorted(np.cumsum(p),np.random.random())
+            p=np.divide(np.power(np.take(graph.tau_mat[curr_node],nodes_to_visit,axis=0),self.alpha),np.power(np.take(graph.delta_mat[curr_node],nodes_to_visit,axis=0),self.beta))
+            p=np.divide(p,np.sum(p))
+            inode=np.searchsorted(np.cumsum(p),random.random())
         max_node=nodes_to_visit.pop(inode)
         return max_node
