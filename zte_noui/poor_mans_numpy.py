@@ -1,5 +1,5 @@
 import __builtin__
-Inf=100000000
+Inf=99999999
 
 def arange(mini,maxi=None,step=1):
     if maxi is None:
@@ -20,8 +20,11 @@ def argmax(l):
 def unique(l):
     return list(set(l))
 
-def concatenate(l):
-    return reduce(lambda x,y:x+y,l)
+def concatenate(l,axis=0):
+    if axis==0:
+        return reduce(lambda x,y:list(x)+list(y),l)
+    else:
+        return [concatenate([ln[i] for ln in l]) for i in xrange(len(l[0]))]
 
 def repeat(l,n):
     return concatenate([[li]*n for li in l])
@@ -33,7 +36,10 @@ def array(l):
     return l
 
 def ravel(m):
-    return list(reduce(lambda x,y:x+y,m))
+    if hasattr(m[0],'__iter__'):
+        return reduce(lambda x,y:x+y,[ravel(mi) for mi in m])
+    else:
+        return list(m)
 
 def where(lm):
     if hasattr(lm[0],'__iter__'):  #2D
@@ -53,12 +59,10 @@ def where(lm):
 
 def roll(l,n,axis=0):
     if axis==0:
-        l=l[-n:]+l[:n]
+        l=l[-n:]+l[:-n]
         return l
-    elif axis==1:
-        for ll in l:
-            ll=ll[-n:]+ll[:n]
-        return l
+    else:
+        return [roll(li,n,axis=axis-1) for li in l]
 
 def zeros(shape,**kwargs):
     if not hasattr(shape,'__iter__'):
@@ -117,7 +121,7 @@ def sum(lm):
 def savetxt(filename,m):
     with open(filename,'w') as f:
         for l in m:
-            f.write(' '.join(l)+'\n')
+            f.write(' '.join([str(li) for li in l])+'\n')
 
 def loadtxt(filename):
     m=[]
@@ -180,6 +184,30 @@ def reshape(l,sp):
         ll.append(reshape(l[i*size:i*size+size],sp[1:]))
     return ll
 
+def int32(m):
+    if hasattr(m,'__iter__'):
+        return [int32(mi) for mi in m]
+    else:
+        return int(m)
+
+def isinf(l):
+    if hasattr(l,'__iter__'):
+        return [isinf(li) for li in l]
+    else:
+        return l==Inf
+
+def take(m,indices,axis=0):
+    if axis==0:
+        return [m[ind] for ind in indices]
+    else:
+        return [take(mi,indices,axis=axis-1) for mi in m]
+
+def power(l,x):
+    if not hasattr(l,'__iter__'):
+        return l**x
+    else:
+        return [power(li,x) for li in l]
+
 def mix_mat_by_mean(gmat,bias,mean_weight):
     m=zeros(shape(gmat))
     for i,l in enumerate(gmat):
@@ -187,27 +215,3 @@ def mix_mat_by_mean(gmat,bias,mean_weight):
             if item!=0:
                 m[i][j]=item*(1-bias)+bias*mean_weight
     return m
-
-def int32(m):
-    if hasattr(m,'__iter__'):
-        return [int(mi) for mi in m]
-    else:
-        return int(m)
-
-def isinf(l):
-    if hasattr(l,'__iter__'):
-        return l==Inf
-    else:
-        return [isinf(li) for li in l]
-
-def take(m,indices,axis=0):
-    if axis==0:
-        return [m[ind] for ind in indices]
-    elif axis==1:
-        return [take(mm,indices,axis=0) for mm in m]
-
-def power(l,x):
-    if not hasattr(l,'__iter__'):
-        return l**x
-    else:
-        return [power(li,x) for li in l]

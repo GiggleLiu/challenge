@@ -49,22 +49,18 @@ class MyGraph(object):
         return np.sum(diss)
 
 def save_graph(graph_prefix,graph):
-    must_nodes_mask=np.zeros(graph.num_nodes)
-    must_nodes_mask[graph.must_nodes]=1
-    np.savetxt(graph_prefix+'.nod.dat',np.concatenate([graph.node_positions,must_nodes_mask[:,np.newaxis]],axis=1))
-    must_con_mask=np.zeros(len(graph.connections))
-    must_con_mask[graph.must_connections]=1
-    np.savetxt(graph_prefix+'.con.dat',np.concatenate([graph.connections,must_con_mask[:,np.newaxis]],axis=1))
+    np.savetxt(graph_prefix+'.nod.dat',np.concatenate([graph.node_positions,[[0] if i in graph.must_nodes else [1] for i in xrange(graph.num_nodes)]],axis=1))
+    np.savetxt(graph_prefix+'.con.dat',np.concatenate([graph.connections,[[0] if i in graph.must_connections else [1] for i in xrange(len(graph.connections))]],axis=1))
 
 def load_graph(graph_prefix):
     #load nodes
     pos_data=np.loadtxt(graph_prefix+'.nod.dat')
-    must_nodes=np.where(pos_data[:,-1])[0]
-    node_positions=pos_data[:,:2]
+    must_nodes=[i for i in xrange(len(pos_data)) if pos_data[i][-1]>0]
+    node_positions=np.take(pos_data,[0,1],axis=1)
     #load connections
     con_data=np.loadtxt(graph_prefix+'.con.dat')
-    connections=[(int(data[0]),int(data[1]),data[2]) for data in con_data]
-    must_connections=np.where(con_data[:,-1])[0]
+    connections=[[int(data[0]),int(data[1]),data[2]] for data in con_data]
+    must_connections=[i for i in xrange(len(con_data)) if con_data[i][-1]>0]
     g=MyGraph(connections,node_positions,must_nodes=must_nodes,must_connections=must_connections)
     return g
 
@@ -75,3 +71,4 @@ def random_graph(num_nodes,density=1):
     il,jl=np.where(m)
     weights=m[il,jl]
     return MyGraph(zip(il,jl,weights),node_positions=(np.random.random([num_nodes,2])-0.5)*num_nodes)
+

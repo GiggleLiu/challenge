@@ -96,8 +96,20 @@ G9=MyGraph(connections=connections,node_positions=node_positions,\
         must_nodes=np.unique([random.randrange(0,N**2) for i in xrange(N)]),must_connections=list(set([random.randrange(0,2*N**2) for i in xrange(N)])))
 G9_solution=[]
 
-#start == end
-
 Gs=[G0,G1,G2,G3,G4,G5,G6,G7,G8,G9]
 solutions=[G0_solution,G1_solution,G2_solution,G3_solution,G4_solution,G5_solution,\
         G6_solution,G7_solution,G8_solution,G9_solution]
+
+
+def test_saveload():
+    print 'Test save and load of graph.'
+    pref='sample'
+    from graph import save_graph,load_graph
+    save_graph(pref,G0)
+    G1=load_graph(pref)
+    print G0
+    print G1
+
+if __name__=='__main__':
+    test_saveload()
+

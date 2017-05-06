@@ -1,9 +1,9 @@
-import os,sys,pdb
+import os,sys
 import ConfigParser
+import random
+
 from graph import load_graph
 from solvepath import find_shortest_path
-from testcases import Gs
-import random
 
 def run_config(config_file):
     '''
@@ -13,6 +13,8 @@ def run_config(config_file):
     config=ConfigParser.RawConfigParser()
     config.read(config_file)
     random.seed(config.getint('program','random_seed'))
+    from testcases import Gs  #import testcase here to make random_seed take effect
+
     max_num_nodes=config.getint('problem','max_num_nodes')
     graph_spec=config.getint('problem','graph_specify')
     if graph_spec<0:
@@ -26,7 +28,7 @@ def run_config(config_file):
             'num_ant_repetitions':config.getint('ant_colony','num_ant_repetitions'),
             'num_ant_iterations':config.getint('ant_colony','num_ant_iterations')}
 
-    solution,cost=find_shortest_path(g,max_num_nodes=max_num_nodes,djmethod=config.get('program','shortest_path_algorithm'),\
+    solution,cost=find_shortest_path(g,max_num_nodes=max_num_nodes,\
             ant_config=ant_config,max_eval=config.getint('problem','constraint_maxeval'))
 
 if __name__=='__main__':

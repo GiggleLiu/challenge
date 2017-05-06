@@ -2,11 +2,11 @@ from configobj import ConfigObj
 from validate import Validator
 import matplotlib.pyplot as plt
 import os,sys
+import numpy as np
 
 from graph_visualization import animate_path,visualize_graph,visualize_path
 from graph import load_graph
 from solvepath import find_shortest_path
-from testcases import Gs
 
 def run_config(config_file):
     '''
@@ -21,6 +21,9 @@ def run_config(config_file):
         raise ValueError('Configuration Error! %s'%result)
     max_num_nodes=config['problem']['max_num_nodes']
     graph_spec=config['problem']['graph_specify']
+    np.random.seed(config['program']['random_seed'])
+
+    from testcases import Gs  #import testcase here to make random_seed take effect
     if graph_spec<0:
         graph_prefix=config['problem']['graph_file_prefix']
         g=load_graph(graph_prefix)
