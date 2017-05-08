@@ -18,6 +18,7 @@ class MyGraph(object):
         il,jl,wl=zip(*self.connections)
         num_nodes=int(max(max(il),max(jl))+1)
         if num_nodes!=self.node_positions.shape[0] or self.node_positions.shape[1]!=2:
+            print self.node_positions,num_nodes
             raise ValueError()
 
         #initialize matrices.

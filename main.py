@@ -31,7 +31,8 @@ def run_config(config_file):
         g=Gs[graph_spec]
 
     solution,cost=find_shortest_path(g,max_num_nodes=max_num_nodes,djmethod=config['program']['shortest_path_algorithm'],\
-            ant_config=config['ant_colony'],max_eval=config['problem']['constraint_maxeval'])
+            ant_config=config['ant_colony'],max_eval=config['problem']['constraint_maxeval'],\
+            bias_neg=config['program']['bias_neg'],bias_pos=config['program']['bias_pos'])
 
     vconfig=config['visualization']
     visualize_method=vconfig['visualize_method']
@@ -49,10 +50,13 @@ def run_config(config_file):
         animate_path(g,solution,ant_speed=vconfig['ant_speed'])
         plt.show()
     elif visualize_method=='save-gif':
-        fname=vconfig['gif_filename']
+        fname=vconfig['fig_filename']
         print 'Generating Gif file (may take a while)...'
         animate_path(g,solution,ant_speed=vconfig['ant_speed'],filename=fname)
         print 'Saved to file %s'%fname
+    elif visualize_method=='raw':
+        fname=vconfig['fig_filename']
+        plt.savefig(fname)
 
 if __name__=='__main__':
     if len(sys.argv)>1:

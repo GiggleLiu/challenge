@@ -29,7 +29,9 @@ def run_config(config_file):
             'num_ant_iterations':config.getint('ant_colony','num_ant_iterations')}
 
     solution,cost=find_shortest_path(g,max_num_nodes=max_num_nodes,\
-            ant_config=ant_config,max_eval=config.getint('problem','constraint_maxeval'))
+            ant_config=ant_config,max_eval=config.getint('problem','constraint_maxeval'),\
+            bias_neg=config.getfloat('program','bias_neg'),bias_pos=config.getfloat('program','bias_pos'))
+
 
 if __name__=='__main__':
     if len(sys.argv)>1:

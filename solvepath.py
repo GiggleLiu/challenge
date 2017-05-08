@@ -42,6 +42,16 @@ def _find_shortest_path1(g,bias,max_num_nodes,ant_config,djmethod,bias_pos,bias_
     must_nodes=np.int32(np.unique(np.concatenate([g.must_nodes,[0,g.num_nodes-1],np.array(must_connections).ravel()])))
     must_nodes.sort()
     tsp_mat,predecesor=djfunc_tqk(mat,must_nodes,must_connections,method=djmethod,bias_pos=bias_pos,bias_neg=bias_neg)
+    if True:
+        from graph_visualization import visualize_tsp_mat
+        import matplotlib.pyplot as plt
+        import pdb
+        fig=plt.figure(figsize=(15,9),facecolor='w')
+        plt.axis('equal')
+        plt.axis('off')
+        visualize_tsp_mat(tsp_mat,pos=g.node_positions,nodes=must_nodes)
+        plt.savefig('tsp.eps')
+        pdb.set_trace()
 
     #solve tsp using ant colony
     best_path_vecs,best_path_costs=solve_tsp_mat(tsp_mat,**ant_config)
@@ -134,7 +144,7 @@ def djfunc_tqk(mat,node,line,method='D',bias_pos=100,bias_neg=-0.1):
                                 path=1
                                 break
                 if path==1:
-                    dist[k,j]=dist[i,k]+bias_pos
+                    dist[k,j]+=bias_pos
                     dist[j,k]=dist[k,j]
                     break
                 else:

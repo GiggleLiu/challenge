@@ -130,7 +130,7 @@ def djfunc_tqk(mat,node,line,bias_pos=100,bias_neg=-0.1):
                                 path=1
                                 break
                 if path==1:
-                    dist[k][j]=dist[i][k]+bias_pos
+                    dist[k][j]+=bias_pos
                     dist[j][k]=dist[k][j]
                     break
                 else:

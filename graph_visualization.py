@@ -10,7 +10,9 @@ from matplotlib import animation
 from matplotlib.offsetbox import OffsetImage,AnnotationBbox
 import os
 
-__all__=['visualize_graph','visualize_path','animate_path','distance2pos']
+from graph import MyGraph
+
+__all__=['visualize_graph','visualize_path','animate_path','distance2pos','visualize_tsp_mat']
 
 radius=0.3
 
@@ -45,7 +47,7 @@ def plot_single_connection(pos1,pos2,weight=1,text='',arrow_direction=0,color='k
 
     fontsize=12
     ax=plt.gca()
-    ax.plot([pos1[0],pos2[0]],[pos1[1],pos2[1]],lw=weight,color=color,zorder=99)
+    ax.plot([pos1[0],pos2[0]],[pos1[1],pos2[1]],lw=2,color=color,zorder=99)
     #add a text.
     midpos=pos1*0.4+pos2*0.6
     midpos_text=pos1*0.3+pos2*0.7
@@ -63,7 +65,7 @@ def plot_single_connection_old(pos1,pos2,weight,color='k'):
     dr=r/norm_r*0.3
     pos1=pos1+dr
     pos2=pos2-dr
-    plt.plot([pos1[0],pos2[0]],[pos1[1],pos2[1]],lw=2*weight,color=color)
+    plt.plot([pos1[0],pos2[0]],[pos1[1],pos2[1]],lw=2,color=color)
 
 def visualize_graph(g):
     '''
@@ -147,3 +149,26 @@ def animate_path(g,path,ant_speed=1,filename=None):
         plt.show()
     else:
         anim.save('ant-march.gif',dpi=80,writer='imagemagick')
+
+def visualize_tsp_mat(tsp_mat,pos,nodes):
+    N=len(tsp_mat)
+    connections=reduce(lambda x,y:x+y,[[(nodes[i],nodes[j],tsp_mat[i,j]) for j in xrange(i)] for i in xrange(N)])
+    g=MyGraph(connections=connections,
+            node_positions=pos,
+            must_nodes=nodes,
+            must_connections=[i for i,con in enumerate(connections) if con[-1]==-0.1])
+    ng=g.num_nodes
+    poss=g.node_positions
+    il,jl,weights=zip(*g.connections)
+
+    colors=array(['w']*ng)
+    colors[g.must_nodes]='g'
+    colors[0]='y'; colors[-1]='y'
+
+    for i in nodes:
+        plot_single_node(poss[i],color=colors[i],text='%s'%i)
+    for ii,(i,j,weight) in enumerate(g.connections):
+        must_con=ii in g.must_connections
+        plot_single_connection(poss[i],poss[j],weight=weight if not must_con else 3,text='%s'%weight,color='g' if must_con else 'k',shrink=True)
+
+
