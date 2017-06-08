@@ -47,7 +47,7 @@ def plot_single_connection(pos1,pos2,weight=1,text='',arrow_direction=0,color='k
 
     fontsize=12
     ax=plt.gca()
-    ax.plot([pos1[0],pos2[0]],[pos1[1],pos2[1]],lw=2,color=color,zorder=99)
+    ax.plot([pos1[0],pos2[0]],[pos1[1],pos2[1]],lw=2,color=color,zorder=-1)
     #add a text.
     midpos=pos1*0.4+pos2*0.6
     midpos_text=pos1*0.3+pos2*0.7
@@ -107,7 +107,7 @@ def visualize_path(g,path):
 def get_ant(pos):
     image_path=os.path.join(os.path.dirname(__file__),'static/ant.png')
     image=plt.imread(image_path)
-    im=OffsetImage(image,zoom=0.1)
+    im=OffsetImage(image,zoom=0.1,zorder=200)
     ab=AnnotationBbox(im,(pos[0],pos[1]),xycoords='data',frameon=False)
     plt.gca().add_artist(ab)
     return ab
@@ -143,12 +143,12 @@ def animate_path(g,path,ant_speed=1,filename=None):
 
     anim = animation.FuncAnimation(plt.gcf(), update,  
                                    frames=len(route), 
-                                   interval=40,repeat=False,
+                                   interval=100,repeat=False,
                                    blit=True)
     if filename is None:
         plt.show()
     else:
-        anim.save('ant-march.gif',dpi=80,writer='imagemagick')
+        anim.save(filename,dpi=80,writer='imagemagick')
 
 def visualize_tsp_mat(tsp_mat,pos,nodes):
     N=len(tsp_mat)

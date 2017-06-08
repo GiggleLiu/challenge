@@ -1,9 +1,9 @@
 #import numpy as np
 import poor_mans_numpy as np
-import random
+import random,math
 
 class Ant(object):
-    def __init__(self, start_node, graph,end_node=None,alpha=1,beta=1,prob_exploitation=0.5,rho=0.99):
+    def __init__(self, start_node, graph,end_node=None,alpha=1,beta=1,prob_exploitation=0.6,rho=0.9):
         self.start_node = start_node
         self.end_node=end_node if end_node is not None else start_node
         self.graph = graph
@@ -12,7 +12,8 @@ class Ant(object):
         self.alpha = alpha
         self.beta = beta
         self.prob_exploitation = prob_exploitation
-        self.rho = 0.99
+        self.rho = rho
+        self.xi=np.mean(self.graph.delta_mat)
 
         self.reset()
 
@@ -53,11 +54,14 @@ class Ant(object):
         nodes_to_visit=self.nodes_to_visit
 
         if random.random() < self.prob_exploitation:
-            val = np.divide(np.power(np.take(graph.tau_mat[curr_node],nodes_to_visit,axis=0),self.alpha),
-                    np.power(np.take(graph.delta_mat[curr_node],nodes_to_visit,axis=0),self.beta))
+            #val = np.divide(np.power(np.take(graph.tau_mat[curr_node],nodes_to_visit,axis=0),self.alpha),
+                    #np.power(np.take(graph.delta_mat[curr_node],nodes_to_visit,axis=0),self.beta))
+            val = [graph.tau_mat[curr_node][nv]**self.alpha*math.exp(-graph.delta_mat[curr_node][nv]**self.beta/self.xi) for nv in nodes_to_visit]
             inode=np.argmax(val)
         else:
-            p=np.divide(np.power(np.take(graph.tau_mat[curr_node],nodes_to_visit,axis=0),self.alpha),np.power(np.take(graph.delta_mat[curr_node],nodes_to_visit,axis=0),self.beta))
+            #p=np.divide(np.power(np.take(graph.tau_mat[curr_node],nodes_to_visit,axis=0),self.alpha),
+                    #np.power(np.take(graph.delta_mat[curr_node],nodes_to_visit,axis=0),self.beta))
+            p=[graph.tau_mat[curr_node][nv]**self.alpha*math.exp(-graph.delta_mat[curr_node][nv]**self.beta/self.xi) for nv in nodes_to_visit]
             p=np.divide(p,np.sum(p))
             inode=np.searchsorted(np.cumsum(p),random.random())
         max_node=nodes_to_visit.pop(inode)

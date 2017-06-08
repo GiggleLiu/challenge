@@ -30,7 +30,8 @@ class MyGraph(object):
         self.dense_matrix[il,jl]=weights
 
     def __str__(self):
-        return 'Graph(%s nodes, %s legs)\n %s'%(self.num_nodes,self.num_paths,'\n '.join(str(con) for con in self.connections))
+        return 'Graph(%s nodes, %s legs)\n %s\n must nodes: %s\n must paths: %s'%(self.num_nodes,self.num_paths,\
+                ', '.join(str(con) for con in self.connections),self.must_nodes,np.take(self.connections,self.must_connections,axis=0))
 
     @property
     def num_nodes(self):

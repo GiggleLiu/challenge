@@ -43,4 +43,4 @@ class AntColony:
         '''Update Pheromone on the graph.'''
         pos=self.best_path_vec[:-1],self.best_path_vec[1:]
         self.graph.tau_mat*=(1-self.Rho)
-        self.graph.tau_mat[pos]+=self.Rho/self.best_path_cost
+        self.graph.tau_mat[pos]+=self.Rho/abs(self.best_path_cost)

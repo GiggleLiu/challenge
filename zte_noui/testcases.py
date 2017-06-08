@@ -85,20 +85,27 @@ G8=MyGraph(connections=[(3,1,1.),(3,2,0.5),(1,2,1.3),\
         must_connections=[7])
 G8_solution=[0,4,5,6] #no solusion
 
+G9=MyGraph(connections=[(0,1,1.5),(0,2,1.1),(1,2,1.),(1,3,2.),(2,3,0.4)],\
+        node_positions=np.array([(0,0),(-1,1),(1,1),(0,2.)]),\
+        must_nodes=[],must_connections=[2])
+G9_solution=[0,1,2,3]
+
 #big lattice.
 N=10
 x,y=np.arange(10),np.arange(10)
 X,Y=np.repeat(x,N),np.concatenate([y]*N)
 node_positions=zip(X,Y)
 Atom=np.reshape(np.arange(N**2),[N,N])
-connections=zip(np.ravel(Atom),np.ravel(np.roll(Atom,1,axis=0)),np.ones(N**2))+zip(np.ravel(Atom),np.ravel(np.roll(Atom,1,axis=1)),np.ones(N**2))
-G9=MyGraph(connections=connections,node_positions=node_positions,\
-        must_nodes=np.unique([random.randrange(0,N**2) for i in xrange(N)]),must_connections=list(set([random.randrange(0,2*N**2) for i in xrange(N)])))
-G9_solution=[]
+#connections=zip(np.ravel(Atom),np.ravel(np.roll(Atom,1,axis=0)),np.ones(N**2))+zip(np.ravel(Atom),np.ravel(np.roll(Atom,1,axis=1)),np.ones(N**2))
+connections=zip(np.ravel(Atom[:-1]),np.ravel(Atom[1:]),np.ones(N**2-N))+\
+        zip(np.ravel(np.take(Atom,range(N-1),axis=1)),np.ravel(np.take(Atom,range(1,N),axis=1)),np.ones(N**2-N))
+G10=MyGraph(connections=connections,node_positions=node_positions,\
+        must_nodes=[7,15,22,34,40,43,49,72,75,82],must_connections=[47,63,75,95])
+G10_solution=[]
 
-Gs=[G0,G1,G2,G3,G4,G5,G6,G7,G8,G9]
+Gs=[G0,G1,G2,G3,G4,G5,G6,G7,G8,G9,G10]
 solutions=[G0_solution,G1_solution,G2_solution,G3_solution,G4_solution,G5_solution,\
-        G6_solution,G7_solution,G8_solution,G9_solution]
+        G6_solution,G7_solution,G8_solution,G9_solution,G10_solution]
 
 
 def test_saveload():

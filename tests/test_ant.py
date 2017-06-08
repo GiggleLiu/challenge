@@ -9,7 +9,7 @@ from solvepath import solve_tsp_mat,analyse_tsp_solutions
 
 #default
 num_nodes = 10
-np.random.seed(7)
+np.random.seed(9)
 
 if __name__ == "__main__":   
     if len(sys.argv) > 1 and sys.argv[1]:
@@ -23,3 +23,4 @@ if __name__ == "__main__":
     print cost_mat
     best_path_vec,best_path_cost=solve_tsp_mat(cost_mat)
     analyse_tsp_solutions(best_path_vec,best_path_cost)
+    assert(best_path_cost[0]==5093)

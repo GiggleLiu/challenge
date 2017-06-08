@@ -29,7 +29,8 @@ class MyGraph(object):
             self.dense_matrix[i][j]=w
 
     def __str__(self):
-        return 'Graph(%s nodes, %s legs)\n %s'%(self.num_nodes,self.num_paths,'\n '.join(str(con) for con in self.connections))
+        return 'Graph(%s nodes, %s legs)\n  %s\n  must nodes: %s\n  must paths: %s'%(self.num_nodes,self.num_paths,\
+                ', '.join(str(con) for con in self.connections),self.must_nodes,np.take(self.connections,self.must_connections))
 
     @property
     def num_nodes(self):
@@ -49,8 +50,8 @@ class MyGraph(object):
         return np.sum(diss)
 
 def save_graph(graph_prefix,graph):
-    np.savetxt(graph_prefix+'.nod.dat',np.concatenate([graph.node_positions,[[0] if i in graph.must_nodes else [1] for i in xrange(graph.num_nodes)]],axis=1))
-    np.savetxt(graph_prefix+'.con.dat',np.concatenate([graph.connections,[[0] if i in graph.must_connections else [1] for i in xrange(len(graph.connections))]],axis=1))
+    np.savetxt(graph_prefix+'.nod.dat',np.concatenate([graph.node_positions,[[1] if i in graph.must_nodes else [0] for i in xrange(graph.num_nodes)]],axis=1))
+    np.savetxt(graph_prefix+'.con.dat',np.concatenate([graph.connections,[[1] if i in graph.must_connections else [0] for i in xrange(len(graph.connections))]],axis=1))
 
 def load_graph(graph_prefix):
     #load nodes
@@ -59,7 +60,7 @@ def load_graph(graph_prefix):
     node_positions=np.take(pos_data,[0,1],axis=1)
     #load connections
     con_data=np.loadtxt(graph_prefix+'.con.dat')
-    connections=[[int(data[0]),int(data[1]),data[2]] for data in con_data]
+    connections=[(int(data[0]),int(data[1]),data[2]) for data in con_data]
     must_connections=[i for i in xrange(len(con_data)) if con_data[i][-1]>0]
     g=MyGraph(connections,node_positions,must_nodes=must_nodes,must_connections=must_connections)
     return g

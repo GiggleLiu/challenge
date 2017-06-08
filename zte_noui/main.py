@@ -17,21 +17,32 @@ def run_config(config_file):
 
     max_num_nodes=config.getint('problem','max_num_nodes')
     graph_spec=config.getint('problem','graph_specify')
+    print '='*15+' LOAD DATA '+'='*15
     if graph_spec<0:
+        print 'Loading graph from file ...'
         graph_prefix=config.get('problem','graph_file_prefix')
         g=load_graph(graph_prefix)
     else:
+        print 'Loading test case %s.'%graph_spec
         g=Gs[graph_spec]
+    print 'The graph your have specified is\n%s'%g
+    print '  The maximum allowed number of nodes in a path is %s'%max_num_nodes
 
     ant_config={
             'num_ants':config.getint('ant_colony','num_ants'),
             'num_ant_repetitions':config.getint('ant_colony','num_ant_repetitions'),
             'num_ant_iterations':config.getint('ant_colony','num_ant_iterations')}
 
-    solution,cost=find_shortest_path(g,max_num_nodes=max_num_nodes,\
+    print '='*15+' FIND SOLUTION '+'='*15
+    best_path_vec,true_cost=find_shortest_path(g,max_num_nodes=max_num_nodes,\
             ant_config=ant_config,max_eval=config.getint('problem','constraint_maxeval'),\
-            bias_neg=config.getfloat('program','bias_neg'),bias_pos=config.getfloat('program','bias_pos'))
+            bias_neg=config.getfloat('program','bias_neg'))
 
+    print '='*15+' ANALYSE RESULT '+'='*15
+    print 'The reference path is %s, with cost %s.'%(best_path_vec,true_cost)
+    print 'must nodes passed %s/%s'%(len([node for node in g.must_nodes if node in best_path_vec]),len(g.must_nodes))
+    all_paths=zip(best_path_vec[:-1],best_path_vec[1:])+zip(best_path_vec[1:],best_path_vec[:-1])
+    print 'must paths passed %s/%s'%(len([icon for icon in g.must_connections if g.connections[icon][:2] in all_paths]),len(g.must_connections))
 
 if __name__=='__main__':
     if len(sys.argv)>1:

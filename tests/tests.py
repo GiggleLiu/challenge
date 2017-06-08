@@ -16,6 +16,7 @@ def show_cases():
     plt.ion()
     fig=plt.figure(facecolor='w')
     plt.axis('equal')
+    Gs=[G9]
     for ig,g in enumerate(Gs):
         plt.cla()
         plt.axis('off')
@@ -45,7 +46,6 @@ def test_shortest_path():
 
 def test_g(g):
     solution,cost=find_shortest_path(g,max_num_nodes=12)
-    return
     print solution,cost
     #ion()
     visualize_graph(g)
@@ -59,6 +59,6 @@ def test_g(g):
 
 if __name__=='__main__':
     #test_saveload()
-    test_g(G9)
+    #test_g(G9)
     #test_shortest_path()
-    #show_cases()
+    show_cases()

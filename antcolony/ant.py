@@ -11,6 +11,7 @@ class Ant(object):
         self.beta = beta
         self.prob_exploitation = prob_exploitation
         self.rho = 0.99
+        self.xi=self.graph.delta_mat.mean()
 
         self.reset()
 
@@ -51,10 +52,12 @@ class Ant(object):
         nodes_to_visit=self.nodes_to_visit
 
         if np.random.random() < self.prob_exploitation:
-            val = graph.tau_mat[curr_node, nodes_to_visit]**self.alpha/graph.delta_mat[curr_node, nodes_to_visit]**self.beta
+            #val = graph.tau_mat[curr_node, nodes_to_visit]**self.alpha/graph.delta_mat[curr_node, nodes_to_visit]**self.beta
+            val = graph.tau_mat[curr_node, nodes_to_visit]**self.alpha*np.exp(-graph.delta_mat[curr_node, nodes_to_visit]**self.beta/self.xi)
             inode=np.argmax(val)
         else:
-            p=graph.tau_mat[curr_node, nodes_to_visit]**self.alpha/graph.delta_mat[curr_node, nodes_to_visit]**self.beta
+            #p=graph.tau_mat[curr_node, nodes_to_visit]**self.alpha/graph.delta_mat[curr_node, nodes_to_visit]**self.beta
+            p=graph.tau_mat[curr_node, nodes_to_visit]**self.alpha*np.exp(-graph.delta_mat[curr_node, nodes_to_visit]**self.beta/self.xi)
             p=p/p.sum()
             inode=np.searchsorted(np.cumsum(p),np.random.random())
         max_node=nodes_to_visit.pop(inode)

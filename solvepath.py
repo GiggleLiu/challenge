@@ -19,6 +19,9 @@ def find_shortest_path(g,max_num_nodes=np.Inf,ant_config={},max_eval=5,djmethod=
     else:
         print 'Find solution!'
         print 'The reference path is %s, with cost %s.'%(best_path_vec,true_cost)
+        print 'must nodes passed %s/%s'%(len([node for node in g.must_nodes if node in best_path_vec]),len(g.must_nodes))
+        all_paths=zip(best_path_vec[:-1],best_path_vec[1:])+zip(best_path_vec[1:],best_path_vec[:-1])
+        print 'must paths passed %s/%s'%(len([icon for icon in g.must_connections if g.connections[icon][:2] in all_paths]),len(g.must_connections))
     return best_path_vec,true_cost
 
 def _find_shortest_path1(g,bias,max_num_nodes,ant_config,djmethod,bias_pos,bias_neg):
@@ -42,7 +45,7 @@ def _find_shortest_path1(g,bias,max_num_nodes,ant_config,djmethod,bias_pos,bias_
     must_nodes=np.int32(np.unique(np.concatenate([g.must_nodes,[0,g.num_nodes-1],np.array(must_connections).ravel()])))
     must_nodes.sort()
     tsp_mat,predecesor=djfunc_tqk(mat,must_nodes,must_connections,method=djmethod,bias_pos=bias_pos,bias_neg=bias_neg)
-    if True:
+    if False:
         from graph_visualization import visualize_tsp_mat
         import matplotlib.pyplot as plt
         import pdb
@@ -120,39 +123,10 @@ def djfunc_tqk(mat,node,line,method='D',bias_pos=100,bias_neg=-0.1):
     if any(np.isinf(dist[0,node])):
         print 'Can not find solution, must_pass nodes disconnected!'
         sys.exit()
-    n=len(node)
-    li=np.array(line).ravel()
-    m=len(li)
-    #prd=pred.copy()
-    #np.fill_diagonal(prd,np.arange(len(prd)))
-    #x,y=np.meshgrid(np.arange(pred.shape[0]),np.arange(pred.shape[1]),indexing='ij')
-    #print pred[x,prd]
-    for i in xrange(n):
-        for j in node[i+1:]:
-            path=0
-            k=node[i]
-            t=j
-            s=pred[i,t]
-            while s>=0:
-                for p in xrange(m):
-                    if t==li[p]:
-                        if p%2==0:
-                            if s==li[p+1]:
-                                path=1
-                                break
-                        elif s==li[p-1]:
-                                path=1
-                                break
-                if path==1:
-                    dist[k,j]+=bias_pos
-                    dist[j,k]=dist[k,j]
-                    break
-                else:
-                    t=s
-                    s=pred[i,t]
-	line=np.array(line)
+    line=np.asarray(line)
     if len(line)!=0:
         pred[line[:,0],line[:,1]]=line[:,0]
+        pred[line[:,1],line[:,0]]=line[:,1]
         dist[line[:,0],line[:,1]]=bias_neg
         dist[line[:,1],line[:,0]]=bias_neg
     d=dist[np.ix_(node,node)]

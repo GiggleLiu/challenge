@@ -1,10 +1,11 @@
 #import numpy as np
 import poor_mans_numpy as np
+import math
 
 from ant import Ant
 
 class AntColony:
-    def __init__(self, graph, num_ants, start_node=0, end_node=None, Rho=0.1):
+    def __init__(self, graph, num_ants, start_node=0, end_node=None, Rho=0.2):
         self.graph = graph
         self.Rho = Rho
         self.num_ants=num_ants
@@ -45,4 +46,5 @@ class AntColony:
         pos=self.best_path_vec[:-1],self.best_path_vec[1:]
         self.graph.tau_mat=np.multiply(self.graph.tau_mat,(1-self.Rho))
         for i,j in zip(*pos):
-            self.graph.tau_mat[i][j]+=self.Rho/self.best_path_cost
+            d_tau=self.Rho/max(1e-1,self.best_path_cost)
+            self.graph.tau_mat[i][j]+=d_tau

@@ -85,16 +85,30 @@ G8=MyGraph(connections=[(3,1,1.),(3,2,0.5),(1,2,1.3),\
         must_connections=[7])
 G8.solution=[0,4,5,6] #no solusion
 
+G9=MyGraph(connections=[(0,1,1.5),(0,2,1.1),(1,2,1.),(1,3,2.),(2,3,0.4)],\
+        node_positions=np.array([(0,0),(-1,1),(1,1),(0,2.)]),\
+        must_nodes=[],must_connections=[2])
+G9.solution=[0,1,2,3]
+
+G10=MyGraph(connections=[(0,1,1.),(0,2,0.2),(0,3,10.),(1,2,0.2),(1,3,1.)],\
+        node_positions=np.array([(0,0),(0.5,1),(-0.5,1),(1,0.)]),\
+        must_nodes=[],must_connections=[0,1,3])
+G10.solution=[0,1,2,0,2,1,3]
+
+
 #big lattice.
 N=10
 x,y=np.arange(10),np.arange(10)
 X,Y=np.meshgrid(x,y,indexing='ij')
 node_positions=zip(X.ravel(),Y.ravel())
 Atom=np.arange(N**2).reshape([N,N])
-connections=zip(Atom.ravel(),np.roll(Atom,1,axis=0).ravel(),np.ones(N**2))+zip(Atom.ravel(),np.roll(Atom,1,axis=1).ravel(),np.ones(N**2))
-G9=MyGraph(connections=connections,node_positions=node_positions,must_nodes=np.unique(np.random.randint(0,N**2,N)),must_connections=np.unique(np.random.randint(0,2*N**2,N)))
-G9.solution=[]
+connections=zip(Atom[:-1].ravel(),Atom[1:].ravel(),np.ones(N**2-N))+\
+        zip(Atom[:,:-1].ravel(),Atom[:,1:].ravel(),np.ones(N**2-N))
+G11=MyGraph(connections=connections,node_positions=node_positions,must_nodes=np.unique(np.random.randint(0,N**2,N)),\
+        must_connections=np.unique(np.random.randint(0,2*N**2-2*N,4)))
+G11.solution=[]
+print G11
+import pdb
+pdb.set_trace()
 
-#start == end
-
-Gs=[G0,G1,G2,G3,G4,G5,G6,G7,G8,G9]
+Gs=[G0,G1,G2,G3,G4,G5,G6,G7,G8,G9,G10,G11]
