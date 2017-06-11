@@ -26,3 +26,4 @@ zte_noui/*.c
 zte_noui/*.cpp
 *.spec
 *.png
+*.mod

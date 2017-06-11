@@ -1,6 +1,7 @@
-import binpacking,time
+import time
 import pdb
 from numpy import *
+from bpp_sa import binpacking
 
 random.seed(2)
 
@@ -12,9 +13,9 @@ def get_num_bin(weight,size_bin,assign_table):
     #print bins
     #pdb.set_trace()
     if weight.ndim==1:
-        return binpacking.nextfit(weight[order],size_bin=size_bin)
+        return binpacking.nextfit(weight[order],size_bin=size_bin)[0]
     else:
-        return binpacking.nextfit1d(weight[order],size_bin=size_bin)
+        return binpacking.nextfit1d(weight[order],size_bin=size_bin)[0]
 
 def test_small():
     weight=[2,5,4,7,1,3,8]
@@ -66,10 +67,11 @@ def test_big_vec():
     print 'Dot Prod num_bin = %s, Elapse = %s.'%(nbin,t1-t0)
 
 def test_big():
-    num_item=100000
+    num_item=10000
     weight=random.random([num_item])
     size_bin=3
     method={'First Fit':binpacking.firstfit,
+            'First Fit Bin':binpacking.firstfit_bt,
             'Frist Fit Dec':lambda weight,size_bin:binpacking.firstfit(weight=sort(weight)[::-1], size_bin=size_bin),
             'Next Fit':binpacking.nextfit,
             'Best Fit':binpacking.bestfit
@@ -80,7 +82,43 @@ def test_big():
         t1=time.time()
         print '%s num_bin = %s, Elapse = %s.'%(name, res[0] if hasattr(res,'__iter__') else res,t1-t0)
 
+def test_sa():
+    from bpp_sa import test
+    test()
+
+def test_sa_small():
+    import bpp_sa
+    weight=[2,5,4,7,1,3,8]
+    size_bin=10
+    bpp_sa.bpp1d.init_problem(weight,size_bin,linspace(10,0.5,50),400)
+    #nbin,table=binpacking.dotproduct(weight=weight, size_bin=size_bin)
+    nbin,table=binpacking.firstfit(weight=weight, size_bin=size_bin)
+    bpp_sa.init_random_seed(2)
+    print 'num_bin = %s'%nbin
+    opt_config,nbin=bpp_sa.anneal(3,table+1,nbin)
+    opt_config=opt_config-1
+    print 'num_bin(after optimization) = %s'%nbin
+
+def test_sa_big():
+    import bpp_sa
+    num_item=1000
+    weight=random.random([num_item])
+    size_bin=3
+    bpp_sa.bpp1d.init_problem(weight,size_bin,linspace(30,0.5,100),40000)
+    nbin,table=binpacking.dotproduct(weight=weight, size_bin=size_bin)
+    #nbin,table=binpacking.firstfit(weight=weight, size_bin=size_bin)
+    bpp_sa.init_random_seed(2)
+    print 'num_bin = %s'%nbin
+    print sum(weight)/nbin/size_bin
+    pdb.set_trace()
+    opt_config,nbin=bpp_sa.anneal(3,table+1,nbin)
+    opt_config=opt_config-1
+    print 'num_bin(after optimization) = %s'%nbin
+
+
 #test_small_vec()
-test_big_vec()
-#test_big()
+test_big()
 #test_small()
+#test_big_vec()
+#test_sa()
+#test_sa_big()
