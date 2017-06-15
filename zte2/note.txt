@@ -1,0 +1,4 @@
+400 num_path, 12s, die rate 0.01
+370 num_path, 36s, die rate 0.01, learning rate=0.8e-3
+
+817 num_path, 2s, die rate 0.01, learning rate=0.8e-3

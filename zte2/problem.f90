@@ -25,7 +25,12 @@ module problem
         integer,intent(out) :: cost
         integer :: i,y(num_node)
         !f2py integer,intent(aux) :: num_path
-        y=matmul(table,dp)+occ0
+        y=occ0
+        do i=1,num_path
+            if(dp(i)/=0) then
+                y=y+table(:,i)*dp(i)
+            endif
+        enddo
         cost=0
         do i=1,num_node
             if(y(i)<node_min(i)) then
@@ -76,7 +81,13 @@ module problem
                 dy(i)=y(i)-node_max(i)
             endif
         enddo
-        gradient=matmul(dy,table)
+        !gradient=matmul(dy,table)
+        gradient=0
+        do i=1,num_node
+            if(dy(i)/=0) then
+                gradient=gradient+dy(i)*table(i,:)
+            endif
+        enddo
     end subroutine compute_gradient
 
     subroutine chdp(i_node,delta)
@@ -88,7 +99,7 @@ module problem
 
     subroutine fin_problem()
         implicit none
-        deallocate (table, node_max, node_min,p0,dp)
+        deallocate (table, node_max, node_min,p0,dp,occ0)
     end subroutine fin_problem
 
 end module problem
