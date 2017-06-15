@@ -38,15 +38,16 @@ module problem
         enddo
     end subroutine get_cost
 
-    subroutine compute_gradient(dp,gradient,num_path_)
+    subroutine compute_gradient(dp,gradient)
         implicit none
-        integer,intent(in) :: num_path_,dp(num_path_)
-        integer,intent(out) :: gradient(num_path_)
+        integer,intent(in) :: dp(num_path)
+        integer,intent(out) :: gradient(num_path)
         integer :: i,dy(num_node),x(num_path),y(num_node)
         !f2py integer,intent(aux) :: num_path
-        !f2py depend(num_path_) :: dp,gradient
 
+        print*,'@'
         x=p0+dp
+        print*,'@'
         y=matmul(table,x)
         dy=0
         do i=1,num_node
