@@ -1,17 +1,23 @@
 #-*-coding:utf-8-*-
 import numpy as np
+import xlrd
 import pdb
 
 __all__=['get_testcase']
 
 def get_testcase(which=0):
-    if which==1:
-        return _load_test_data(which)
-    elif which==2:
+    if which==2:
         maxmin=np.loadtxt('maxmin1000.dat',dtype='int32')
         p0=np.loadtxt('p01000.dat',dtype='int32')
         table=np.loadtxt('table1000.dat',dtype='int32')
         return maxmin[:,0],maxmin[:,1],table,p0
+    elif which==1:
+        node_min=np.loadtxt('node_min500.dat',dtype='int32')
+        node_max=np.loadtxt('node_max500.dat',dtype='int32')
+        p0=np.loadtxt('p0500.dat',dtype='int32')
+        table=np.loadtxt('table500.dat',dtype='int32')
+        return node_min,node_max,table,p0
+
     node_min=[10,5,-5,15,5,5,-5,-5,-5]
     node_max=[20,20,10,25,20,20,20,10,15]
     route_table=[[0,4,8],
@@ -40,6 +46,7 @@ def _load_test_data(sheet=1):
     data_val=np.array([[col.value if col.value else 0 for col in ws.row(irow)[3:]] for irow in xrange(2,ws.nrows)],dtype='int32')
     max_row=np.argmax(abs(data_val),axis=0)
     pl=data_val[max_row,np.arange(data_val.shape[1])]
+    pdb.set_trace()
     return minval,maxcal,data,pl
 
 

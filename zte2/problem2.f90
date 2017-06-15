@@ -38,23 +38,6 @@ module problem
         enddo
     end subroutine get_cost
 
-    subroutine get_num_overflow(overflow)
-        implicit none
-        integer,intent(out) :: overflow
-        integer :: i,y(num_node)
-        !f2py integer,intent(aux) :: num_path
-
-        y=matmul(table,dp)+occ0
-        overflow=0
-        do i=1,num_node
-            if(y(i)<node_min(i)) then
-                overflow=overflow+abs(node_min(i)-y(i))
-            else if(y(i)>node_max(i)) then
-                overflow=overflow+abs(node_max(i)-y(i))
-            endif
-        enddo
-    end subroutine get_num_overflow
-
     subroutine compute_gradient(num_path_,gradient)
         implicit none
         integer,intent(in) :: num_path_
